@@ -1,0 +1,56 @@
+# Based on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md
+
+on: [push]
+
+name: CI
+   
+jobs:
+  ci:
+    name: Build, test, check and lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      # builds, tests and checks the formatting
+      - uses: rust-lang/simpleinfra/github-actions/simple-ci@master
+        with:
+          check_fmt: true      
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
+
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+        
+  # ##########################################################
+  # # Slack Notification
+  # ##########################################################
+
+  # slack:
+  #   name: Slack
+  #   needs: ci # set needs only last job except this job
+  #   runs-on: ubuntu-latest
+  #   if: always() # set always
+  #   steps:
+  #       # run this action to get workflow conclusion
+  #       # You can get conclusion via env (env.WORKFLOW_CONCLUSION)
+  #     - uses: technote-space/workflow-conclusion-action@v1
+  #     - uses: 8398a7/action-slack@v2
+  #       with:
+  #         # status: ${{ env.WORKFLOW_CONCLUSION }} # neutral, success, cancelled, timed_out, failure
+  #         status: failure
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+  #       if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure              

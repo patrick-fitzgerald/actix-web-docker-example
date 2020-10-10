@@ -1,0 +1,59 @@
+name: Deploy
+
+# TODO Deploy on master PR
+# on:
+#   pull_request:
+#     branches:
+#       - master
+
+# Source: https://github.com/rust-lang/docs.rs/actions/runs/170488642/workflow
+
+on: [push]
+
+jobs:
+
+  ##########################################################
+  # Amazon ECS Deploy
+  ##########################################################
+
+  ecs_deploy:
+    name: ECS Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Build the Docker image
+        run: docker build -t actix-web-docker-example .        
+
+      - uses: rust-lang/simpleinfra/github-actions/upload-docker-image@master
+        with:
+          image: actix-web-docker-example
+          repository: actix-web-docker-example
+          region: us-east-1
+          # redeploy_ecs_cluster: cluster-name
+          # redeploy_ecs_service: service-name
+          aws_access_key_id: "${{ secrets.aws_access_key_id }}"
+          aws_secret_access_key: "${{ secrets.aws_secret_access_key }}"
+
+  ##########################################################
+  # Slack Notification
+  ##########################################################
+
+  # slack:
+  #   name: Slack
+  #   needs: ecs_deploy # set needs only last job except this job
+  #   runs-on: ubuntu-latest
+  #   if: always() # set always
+  #   steps:
+  #       # run this action to get workflow conclusion
+  #       # You can get conclusion via env (env.WORKFLOW_CONCLUSION)
+  #     - uses: technote-space/workflow-conclusion-action@v1
+  #     - uses: 8398a7/action-slack@v2
+  #       with:
+  #         # status: ${{ env.WORKFLOW_CONCLUSION }} # neutral, success, cancelled, timed_out, failure
+  #         status: failure
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+  #       if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure              
