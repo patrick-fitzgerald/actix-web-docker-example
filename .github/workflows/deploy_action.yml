@@ -26,15 +26,15 @@ jobs:
       - name: Build the Docker image
         run: docker build -t actix-web-docker-example .        
 
-      - uses: rust-lang/simpleinfra/github-actions/upload-docker-image@master
-        with:
-          image: actix-web-docker-example
-          repository: actix-web-docker-example
-          region: us-east-1
-          # redeploy_ecs_cluster: cluster-name
-          # redeploy_ecs_service: service-name
-          aws_access_key_id: "${{ secrets.aws_access_key_id }}"
-          aws_secret_access_key: "${{ secrets.aws_secret_access_key }}"
+      # - uses: rust-lang/simpleinfra/github-actions/upload-docker-image@master
+      #   with:
+      #     image: actix-web-docker-example
+      #     repository: actix-web-docker-example
+      #     region: us-east-1
+      #     redeploy_ecs_cluster: cluster-name
+      #     redeploy_ecs_service: service-name
+      #     aws_access_key_id: "${{ secrets.aws_access_key_id }}"
+      #     aws_secret_access_key: "${{ secrets.aws_secret_access_key }}"
 
   ##########################################################
   # Slack Notification
