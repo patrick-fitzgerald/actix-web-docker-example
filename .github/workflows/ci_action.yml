@@ -3,7 +3,7 @@
 on: [push]
 
 name: CI
-   
+
 jobs:
   ci:
     name: Build, test, check and lint
@@ -14,10 +14,17 @@ jobs:
         with:
           fetch-depth: 1
 
-      # builds, tests and checks the formatting
-      - uses: rust-lang/simpleinfra/github-actions/simple-ci@master
-        with:
-          check_fmt: true      
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Build
+        run: cargo build --tests --workspace
+
+      - name: Test
+        run: cargo test --workspace
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -32,7 +39,7 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
-        
+
   # ##########################################################
   # # Slack Notification
   # ##########################################################
@@ -53,4 +60,4 @@ jobs:
   #       env:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #         SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
-  #       if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure              
+  #       if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
